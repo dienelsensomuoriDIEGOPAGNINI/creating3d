@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>creating</title>
+		<style>
+			body { margin: 0; }
+		</style>
+	</head>
+    
+    <body>
+        <script src="js/three.js"></script>
+        <script src="js/OrbitControls.js"></script>
+        <script src="js/GLTFLoader.js"></script>
+        <script src="js/Sky.js"></script>
+        
+        <script>
+           
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+			const renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+            document.body.appendChild( renderer.domElement );
+
+            window.addEventListener( 'resize', function( )
+            {
+                var width = window.innerWidth;
+                var height = window.innerHeight;
+                renderer.setSize( width, height);
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix( );
+            } );
+            
+            
+            controls = new THREE.OrbitControls( camera, renderer.domElement );
+            
+            
+            const  loader = new THREE.GLTFLoader();
+            loader.load( 'models/terrain.glb', 
+            function ( gltf ) {
+                model = gltf.scene
+                scene.add (model);
+            });
+
+            loader.load( 'models/untitled_candele.glb', 
+            function ( gltf ) {
+                modelone = gltf.scene
+                scene.add (modelone);
+            });
+
+            const listener = new THREE.AudioListener();
+            camera.add (listener);
+            const sound = new THREE.Audio (listener);
+            const audioLoader = new THREE.AudioLoader ();
+            audioLoader.load ('sounds/bladee.wav',
+            function (buffer) {
+                sound.setBuffer (buffer);
+                sound.setLoop (true);
+                sound.setVolume (0.5);
+                //sound.play ();
+            });
+            
+
+
+            camera.position.z = 5;
+            
+            const ambientLight = new THREE.HemisphereLight( 0xffffbb, 0x080820, 2 );
+            scene.add( ambientLight );
+
+            
+
+			var animate = function () {
+                requestAnimationFrame ( animate );
+                model.rotation.y += 0.003;
+                model.position.z = 4;
+                model.position.y = -20;
+               // model.rotation.y += 1;
+               modelone.position.z = 5;
+               modelone.position.y = 1;
+               modelone.rotation.x = 7;
+               modelone.rotation.z = 10;
+               modelone.rotation.y += 0.003;
+                controls.update();
+                renderer.render(scene, camera);
+        
+			};
+
+			animate();
+		</script>
+	</body>
+</html>

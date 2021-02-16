@@ -125,17 +125,11 @@
 
                 }
 
-        };
+            };
 
-        document.addEventListener( 'keydown', onKeyDown );
-        document.addEventListener( 'keyup', onKeyUp );
+            document.addEventListener( 'keydown', onKeyDown );
+            document.addEventListener( 'keyup', onKeyUp );
 
-
-
-
-
-
-            
             
             const  loader = new THREE.GLTFLoader();
             loader.load( 'models/textureblg.glb', 
@@ -163,25 +157,41 @@
             });
             
             const direction = new THREE.Vector3();
+            let acceleration = new THREE.Vector3();
+            let velocity = new THREE.Vector3();
+            const maxAccel = 5.0;
+            const maxSpeed = 2.7;
+            const c = 0.15;
+            const frictionC = 1 - 1*c;
+            
             let prevTime = performance.now ();
             function updateControls () {
                 const time = performance.now();
                 const delta = ( time - prevTime ) / 1000;
-                direction.z = Number( moveForward ) - Number( moveBackward );
                 direction.x = Number( moveRight ) - Number( moveLeft );
                 direction.y = Number( moveUpward ) - Number( moveDownward );
+                direction.z = Number( moveForward ) - Number( moveBackward );
                 direction.normalize();
-                if ( moveForward || moveBackward ) {
-                    controls.moveForward ( direction.z * 1 * delta );
-                } 
-                if ( moveLeft || moveRight ) { 
-                    controls.moveRight ( direction.x * 1 * delta );
-                }
-                if (moveUpward || moveDownward ) {
-                    camera.position.y += direction.y * 1 * delta;
-                }
+
+                direction.multiplyScalar(maxAccel * delta * maxSpeed)
+
+                velocity.add(direction);
+                velocity.multiplyScalar(frictionC);
+
+                controls.moveForward ( velocity.z * delta );
+                controls.moveRight ( velocity.x * delta );
+                camera.position.y += velocity.y * delta;
                 prevTime = time;
             }
+
+            const onWheel = function({ deltaY }) {
+                if (deltaY < 0) {
+                    velocity.y += 1;
+                } else {
+                    velocity.y -= 1;
+                }
+            }
+            document.addEventListener( 'wheel', onWheel);
 
 			var animate = function () {
                 requestAnimationFrame ( animate );

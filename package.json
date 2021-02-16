@@ -1,0 +1,33 @@
+{
+  "name": "creating3d",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "serve dist",
+    "serve": "webpack serve --content-base dist",
+    "build": "webpack",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dienelsensomuoriDIEGOPAGNINI/creating3d.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dienelsensomuoriDIEGOPAGNINI/creating3d/issues"
+  },
+  "homepage": "https://github.com/dienelsensomuoriDIEGOPAGNINI/creating3d#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.12.16",
+    "@babel/core": "^7.12.16",
+    "file-loader": "^6.2.0",
+    "serve": "^11.3.2",
+    "webpack": "^5.22.0",
+    "webpack-cli": "^4.5.0",
+    "webpack-dev-server": "^3.11.2"
+  },
+  "dependencies": {
+    "three": "^0.125.2"
+  }
+}

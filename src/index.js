@@ -4,7 +4,6 @@ import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockCont
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { GodRaysEffect, RenderPass, EffectPass, EffectComposer } from "postprocessing";
 import untitled_candele from '../models/untitled_candele.glb';
-import face from '../models/face.glb';
 import textureblg from '../models/textureblg.glb';
 import bladee from '../sounds/bladee.wav';
 

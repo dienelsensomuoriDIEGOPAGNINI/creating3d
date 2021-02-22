@@ -5,6 +5,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { GodRaysEffect, RenderPass, EffectPass, EffectComposer } from "postprocessing";
 import untitled_candele from '../models/untitled_candele.glb';
 import textureblg from '../models/textureblg.glb';
+import face from '../models/face.glb';
 import bladee from '../sounds/bladee.wav';
 
 const scene = new THREE.Scene();
@@ -130,7 +131,7 @@ scene.add (sphere);
 // hey diego!
 // LOAD MODELLI
 const loader = new GLTFLoader();
-loader.load(textureblg, function (gltf) {
+loader.load(face, function (gltf) {
   const model = gltf.scene;
   scene.add(model);
 });

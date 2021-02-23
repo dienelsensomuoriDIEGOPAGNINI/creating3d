@@ -6,10 +6,12 @@ import { GodRaysEffect, RenderPass, EffectPass, EffectComposer } from "postproce
 import untitled_candele from '../models/untitled_candele.glb';
 import textureblg from '../models/textureblg.glb';
 import face from '../models/face.glb';
+import shining from '../models/shining.glb';
 import bladee from '../sounds/bladee.wav';
 
+
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x2a2a2a);
+scene.background = new THREE.Color(0x000000);
 
 const upColor = 0xFFFF80
 const downColor = 0x4040FF
@@ -127,15 +129,19 @@ sphere.position.set (0,0,-5);
 sphere.scale.set (0.5,0.5,0.5);
 scene.add (sphere);
 
-
 // hey diego!
 // LOAD MODELLI
 const loader = new GLTFLoader();
-loader.load(face, function (gltf) {
-  const model = gltf.scene;
+let model;
+loader.load(shining, function (gltf) {
+  model = gltf.scene;
+  model.scale.set (10,10,10);
+  model.position.set (0,-3,0);
   scene.add(model);
 });
 
+
+let modelone;
 loader.load(untitled_candele, function (gltf) {
   const modelone = gltf.scene;
   scene.add(modelone);
@@ -212,7 +218,10 @@ document.addEventListener("wheel", onWheel);
 var animate = function () {
   requestAnimationFrame(animate);
   updateControls();
-  composer.render();
+  if ( model ) {
+    model.rotation.y += 0.001;
+  }
+  composer.render( scene );
   //renderer.render(scene, camera);
 };
 

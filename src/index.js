@@ -1,23 +1,29 @@
 "use strict";
 import * as THREE from 'three';
-import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls'
+import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { GodRaysEffect, RenderPass, EffectPass, EffectComposer } from "postprocessing";
-import untitled_candele from '../models/untitled_candele.glb';
-import textureblg from '../models/textureblg.glb';
-import face from '../models/face.glb';
-import shining from '../models/shining.glb';
-import bladee from '../sounds/bladee.wav';
-
+import { GodRaysEffect, RenderPass, EffectPass, EffectComposer } from "postprocessing";;
+import GLBcomp1_compressed from '../models/GLBcomp1_compressed.glb';
+import face from '../models/FACE_compressed.glb';
+//import bladee from '../sounds/bladee.wav';
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x000000);
+scene.background = new THREE.Color(0xffffff);
 
 const upColor = 0xFFFF80
 const downColor = 0x4040FF
 const light = new THREE.HemisphereLight(upColor, downColor, 1.0);
 light.position.set(0.5, 1, 0.75);
 scene.add(light);
+
+var ambient = new THREE.AmbientLight( 0xffffff);
+ambient.intensity = 0.2;
+scene.add( ambient );
+
+var directionalLight = new THREE.DirectionalLight( 0xffffff );
+directionalLight.position.set( 0, 0, 1 );
+scene.add( directionalLight );
 
 const camera = new THREE.PerspectiveCamera(
   90,
@@ -132,8 +138,11 @@ scene.add (sphere);
 // hey diego!
 // LOAD MODELLI
 const loader = new GLTFLoader();
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath( 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/js/libs/draco/' );
+loader.setDRACOLoader (dracoLoader);
 let model;
-loader.load(shining, function (gltf) {
+loader.load( GLBcomp1_compressed, function (gltf) {
   model = gltf.scene;
   model.scale.set (10,10,10);
   model.position.set (0,-3,0);
@@ -141,10 +150,13 @@ loader.load(shining, function (gltf) {
 });
 
 
+
 let modelone;
-loader.load(untitled_candele, function (gltf) {
-  const modelone = gltf.scene;
-  scene.add(modelone);
+loader.load(face, function (gltf) {
+  modelone = gltf.scene;
+  modelone.scale.set (10,10,10);
+  modelone.visible = false;
+  scene.add(modelone); 
 });
 
 
@@ -165,19 +177,6 @@ let godraysEffect = new GodRaysEffect (camera, sphere, {
   composer.addPass (renderPass);
   composer.addPass (effectPass);
 
-// hey diego!
-//AUDIO
-const listener = new THREE.AudioListener();
-camera.add(listener);
-const sound = new THREE.Audio(listener);
-const audioLoader = new THREE.AudioLoader();
-audioLoader.load(bladee, function (buffer) {
-  sound.setBuffer(buffer);
-  sound.setLoop(true);
-  sound.setVolume(0.5);
-  //sound.play ();
-});
-
 const direction = new THREE.Vector3();
 let acceleration = new THREE.Vector3();
 let velocity = new THREE.Vector3();
@@ -185,11 +184,12 @@ const maxAccel = 5.0;
 const maxSpeed = 2.7;
 const c = 0.15;
 const frictionC = 1 - 1 * c;
+const v = 2;
 
 let prevTime = performance.now();
 function updateControls() {
   const time = performance.now();
-  const delta = (time - prevTime) / 1000;
+  const delta = (time - prevTime) / 1000 * v;
   direction.x = Number(moveRight) - Number(moveLeft);
   direction.y = Number(moveUpward) - Number(moveDownward);
   direction.z = Number(moveForward) - Number(moveBackward);
@@ -208,12 +208,24 @@ function updateControls() {
 
 const onWheel = function ({ deltaY }) {
   if (deltaY < 0) {
-    velocity.y += 1;
+    velocity.y += 2;
   } else {
-    velocity.y -= 1;
+    velocity.y -= 2;
   }
 };
 document.addEventListener("wheel", onWheel);
+
+function onClick ( ) {
+  if (model.visible) {
+    model.visible = false;
+    modelone.visible = true;
+  } else if (modelone.visible) {
+    modelone.visible = false;
+    model.visible = true;
+  }
+}
+
+document.addEventListener ( "click", onClick);
 
 var animate = function () {
   requestAnimationFrame(animate);

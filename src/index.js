@@ -3,10 +3,11 @@ import * as THREE from 'three';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { GodRaysEffect, RenderPass, EffectPass, EffectComposer } from "postprocessing";;
+import { BloomEffect, RenderPass, EffectPass, EffectComposer } from "postprocessing";;
 import GLBcomp1_compressed from '../models/GLBcomp1_compressed.glb';
-import face from '../models/FACE_compressed.glb';
-//import bladee from '../sounds/bladee.wav';
+import GLBcomp2_compressed from '../models/GLBcomp2_compressed.glb';
+import GLBcomp3_compressed from '../models/GLBcomp3_compressed.glb';
+import ambient_sound from '../sounds/ambient_die.wav';
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xffffff);
@@ -31,7 +32,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 );
-camera.position.z = 5;
+camera.position.z = 50;
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -51,7 +52,7 @@ window.addEventListener(
   function () {
     controls.lock();
   },
-  false
+  true
 );
 
 let moveForward = false;
@@ -128,12 +129,18 @@ const onKeyUp = function (event) {
 document.addEventListener("keydown", onKeyDown);
 document.addEventListener("keyup", onKeyUp);
 
-let sphereGeo = new THREE.SphereGeometry (5, 32, 32);
-let sphereMat = new THREE.MeshBasicMaterial ({color: 0xd5f6fe});
-let sphere = new THREE.Mesh (sphereGeo, sphereMat);
-sphere.position.set (0,0,-5);
-sphere.scale.set (0.5,0.5,0.5);
-scene.add (sphere);
+//MUSICA
+const listener = new THREE.AudioListener();
+camera.add( listener );
+const sound = new THREE.Audio( listener );
+const audioLoader = new THREE.AudioLoader();
+audioLoader.load( ambient_sound, function( buffer ) {
+	sound.setBuffer( buffer );
+  sound.setLoop( true );
+  sound.autoplay = true;
+	sound.setVolume( 1 );
+	sound.play( true );
+});
 
 // hey diego!
 // LOAD MODELLI
@@ -145,36 +152,40 @@ let model;
 loader.load( GLBcomp1_compressed, function (gltf) {
   model = gltf.scene;
   model.scale.set (10,10,10);
-  model.position.set (0,-3,0);
+  model.position.set (-5,-30,0);
   scene.add(model);
 });
 
 
 
 let modelone;
-loader.load(face, function (gltf) {
+loader.load(GLBcomp2_compressed, function (gltf) {
   modelone = gltf.scene;
-  modelone.scale.set (10,10,10);
+  modelone.scale.set (8,8,8);
+  modelone.rotation.y = 180;
+  modelone.position.set (0,-20,0);
   modelone.visible = false;
   scene.add(modelone); 
 });
 
-
-let godraysEffect = new GodRaysEffect (camera, sphere, {
-  resolutionScale: 1,
-  density: 0.6,
-  blurriness: 6,
-  decay: 0.95,
-  weight: 0.8,
-  samples: 80
-  });
-  
-  let renderPass = new RenderPass (scene, camera);
-  let effectPass = new EffectPass (camera, godraysEffect);
-  effectPass.renderToScreen = true;
+let comp3;
+loader.load(GLBcomp3_compressed, function (gltf) {
+  comp3 = gltf.scene;
+  comp3.scale.set (10,10,10);
+  comp3.rotation.y = 130;
+  comp3.position.set (0,-20,0);
+  comp3.visible = false;
+  scene.add(comp3); 
+});
   
   const composer = new EffectComposer (renderer);
-  composer.addPass (renderPass);
+  composer.addPass (new RenderPass (scene, camera));
+
+  let effectPass = new EffectPass (
+    camera,
+    new BloomEffect ()
+  );
+  effectPass.renderToScreen = true;
   composer.addPass (effectPass);
 
 const direction = new THREE.Vector3();
@@ -219,7 +230,13 @@ function onClick ( ) {
   if (model.visible) {
     model.visible = false;
     modelone.visible = true;
+    comp3.visible = false;
   } else if (modelone.visible) {
+    modelone.visible = false;
+    model.visible = false;
+    comp3.visible = true;
+  } else if (comp3.visible) {
+    comp3.visible = false;
     modelone.visible = false;
     model.visible = true;
   }
@@ -233,8 +250,13 @@ var animate = function () {
   if ( model ) {
     model.rotation.y += 0.001;
   }
+  if ( modelone ) {
+    modelone.rotation.y += 0.001;
+  }
+  if ( comp3 ) {
+    comp3.rotation.y += 0.001;
+  }
   composer.render( scene );
-  //renderer.render(scene, camera);
 };
 
 animate();

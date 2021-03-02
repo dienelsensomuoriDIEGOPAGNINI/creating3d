@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { BloomEffect, RenderPass, EffectPass, EffectComposer } from "postprocessing";;
+import { BloomEffect, RenderPass, EffectPass, EffectComposer } from "postprocessing";
 import GLBcomp1_compressed from '../models/GLBcomp1_compressed.glb';
 import GLBcomp2_compressed from '../models/GLBcomp2_compressed.glb';
 import GLBcomp3_compressed from '../models/GLBcomp3_compressed.glb';
@@ -36,7 +36,6 @@ camera.position.z = 50;
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
 
 window.addEventListener("resize", function () {
   var width = window.innerWidth;
@@ -134,12 +133,11 @@ const listener = new THREE.AudioListener();
 camera.add( listener );
 const sound = new THREE.Audio( listener );
 const audioLoader = new THREE.AudioLoader();
-audioLoader.load( ambient_sound, function( buffer ) {
+const audioPromise = audioLoader.loadAsync( ambient_sound).then(function( buffer ) {
 	sound.setBuffer( buffer );
   sound.setLoop( true );
   sound.autoplay = true;
 	sound.setVolume( 1 );
-	sound.play( true );
 });
 
 // hey diego!
@@ -149,7 +147,7 @@ const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath( 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/js/libs/draco/' );
 loader.setDRACOLoader (dracoLoader);
 let model;
-loader.load( GLBcomp1_compressed, function (gltf) {
+const comp1Promise = loader.loadAsync( GLBcomp1_compressed).then(function (gltf) {
   model = gltf.scene;
   model.scale.set (10,10,10);
   model.position.set (-5,-30,0);
@@ -159,7 +157,7 @@ loader.load( GLBcomp1_compressed, function (gltf) {
 
 
 let modelone;
-loader.load(GLBcomp2_compressed, function (gltf) {
+const comp2Promise = loader.loadAsync(GLBcomp2_compressed).then(function (gltf) {
   modelone = gltf.scene;
   modelone.scale.set (8,8,8);
   modelone.rotation.y = 180;
@@ -169,7 +167,7 @@ loader.load(GLBcomp2_compressed, function (gltf) {
 });
 
 let comp3;
-loader.load(GLBcomp3_compressed, function (gltf) {
+const comp3Promise = loader.loadAsync(GLBcomp3_compressed).then(function (gltf) {
   comp3 = gltf.scene;
   comp3.scale.set (10,10,10);
   comp3.rotation.y = 130;
@@ -177,19 +175,28 @@ loader.load(GLBcomp3_compressed, function (gltf) {
   comp3.visible = false;
   scene.add(comp3); 
 });
-  
-  const composer = new EffectComposer (renderer);
-  composer.addPass (new RenderPass (scene, camera));
 
-  let effectPass = new EffectPass (
-    camera,
-    new BloomEffect ()
-  );
-  effectPass.renderToScreen = true;
-  composer.addPass (effectPass);
+Promise.all([
+  audioPromise,
+  comp1Promise,
+  comp2Promise,
+  comp3Promise,
+]).then(function() {
+  sound.play( true );
+  document.body.replaceWith(renderer.domElement);
+})
+
+const composer = new EffectComposer (renderer);
+composer.addPass (new RenderPass (scene, camera));
+
+let effectPass = new EffectPass (
+  camera,
+  new BloomEffect ()
+);
+effectPass.renderToScreen = true;
+composer.addPass (effectPass);
 
 const direction = new THREE.Vector3();
-let acceleration = new THREE.Vector3();
 let velocity = new THREE.Vector3();
 const maxAccel = 5.0;
 const maxSpeed = 2.7;
